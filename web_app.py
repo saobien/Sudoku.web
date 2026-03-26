@@ -1,10 +1,13 @@
 from flask import Flask, render_template, jsonify, request
 import random
+import sys
+
+sys.setrecursionlimit(50000)
 
 app = Flask(__name__)
 
 # -------------------------------------------------------------------------
-# Sudoku logic (ported from sudoku_solver_7.py)
+# Sudoku logic
 # -------------------------------------------------------------------------
 
 def is_valid(board, row, col, num):
@@ -14,72 +17,94 @@ def is_valid(board, row, col, num):
     for i in range(9):
         if board[i][col] == num and i != row:
             return False
-    start_row = (row // 3) * 3
-    start_col = (col // 3) * 3
+    sr = (row // 3) * 3
+    sc = (col // 3) * 3
     for i in range(3):
         for j in range(3):
-            if board[start_row + i][start_col + j] == num and (start_row + i != row or start_col + j != col):
+            if board[sr + i][sc + j] == num and (sr + i != row or sc + j != col):
                 return False
     return True
 
-def find_empty_cell(board):
-    for row in range(9):
-        for col in range(9):
-            if board[row][col] == 0:
-                return row, col
-    return None
+def find_empty_cells(board):
+    """Return list of (row, col) for all empty cells."""
+    return [(r, c) for r in range(9) for c in range(9) if board[r][c] == 0]
 
-def solve_sudoku(board, depth_limit=[1000000]):
-    if not find_empty_cell(board):
+def solve_sudoku_iterative(board, max_steps=2000000):
+    """
+    Iterative backtracking solver — avoids Python recursion limit.
+    Returns True if solved (modifies board in-place), False otherwise.
+    """
+    empties = find_empty_cells(board)
+    if not empties:
         return True
-    depth_limit[0] -= 1
-    if depth_limit[0] <= 0:
-        return False
-    row, col = find_empty_cell(board)
-    for num in range(1, 10):
-        if is_valid(board, row, col, num):
-            board[row][col] = num
-            if solve_sudoku(board, depth_limit):
-                return True
-            board[row][col] = 0
-    return False
 
-def random_number(board, count):
-    datas = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    for _ in range(count):
-        data = random.choice(datas)
+    n = len(empties)
+    # num_choices[i] tracks which number to try next at position i (1..9)
+    choices = [1] * n
+    i = 0
+    steps = 0
+
+    while 0 <= i < n:
+        steps += 1
+        if steps > max_steps:
+            return False
+
+        row, col = empties[i]
+        found = False
+        for num in range(choices[i], 10):
+            if is_valid(board, row, col, num):
+                board[row][col] = num
+                choices[i] = num + 1  # next time, try num+1 onwards
+                i += 1
+                found = True
+                break
+
+        if not found:
+            # backtrack
+            board[row][col] = 0
+            choices[i] = 1
+            i -= 1
+
+    return i == n
+
+def random_fill(board, count=11):
+    """Place `count` random valid numbers to seed board generation."""
+    nums = list(range(1, 10))
+    random.shuffle(nums)
+    placed = 0
+    for num in nums:
+        if placed >= count:
+            break
         attempts = 0
-        while attempts < 100:
+        while attempts < 50:
             r = random.randint(0, 8)
             c = random.randint(0, 8)
-            if board[r][c] == 0:
+            if board[r][c] == 0 and is_valid(board, r, c, num):
+                board[r][c] = num
+                placed += 1
                 break
             attempts += 1
-        if is_valid(board, r, c, data):
-            board[r][c] = data
 
 def random_clear(board, count):
-    cleared = 0
-    attempts = 0
-    while cleared < count and attempts < 1000:
-        r = random.randint(0, 8)
-        c = random.randint(0, 8)
-        if board[r][c] != 0:
-            board[r][c] = 0
-            cleared += 1
-        attempts += 1
+    """Remove `count` random filled cells."""
+    filled = [(r, c) for r in range(9) for c in range(9) if board[r][c] != 0]
+    random.shuffle(filled)
+    for r, c in filled[:count]:
+        board[r][c] = 0
 
 def generate_puzzle(level):
-    board = [[0]*9 for _ in range(9)]
-    for _ in range(1000):
-        b = [[0]*9 for _ in range(9)]
-        random_number(b, 10)
-        dl = [5000]
-        if solve_sudoku(b, dl):
-            board = b
-            break
-    random_clear(board, level)
-    return board
+    """
+    Generate a solvable Sudoku puzzle.
+    level = number of cells to remove (35–65).
+    """
+    for _ in range(30):
+        board = [[0] * 9 for _ in range(9)]
+        random_fill(board, 11)
+        if solve_sudoku_iterative(board, max_steps=500000):
+            random_clear(board, level)
+            return board
+    # Fallback: return empty board
+    return [[0] * 9 for _ in range(9)]
 
 # -------------------------------------------------------------------------
 # Routes
@@ -91,30 +116,37 @@ def index():
 
 @app.route('/api/new-game')
 def new_game():
-    level = int(request.args.get('level', 50))
-    level = max(35, min(65, level))
-    puzzle = generate_puzzle(level)
-    return jsonify({'board': puzzle})
+    try:
+        level = int(request.args.get('level', 50))
+        level = max(35, min(65, level))
+        puzzle = generate_puzzle(level)
+        return jsonify({'board': puzzle})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/solve', methods=['POST'])
 def solve():
-    data = request.get_json()
-    board = data.get('board')
-    if not board:
-        return jsonify({'success': False, 'message': 'No board provided'})
-    # validate first
-    for row in range(9):
-        for col in range(9):
-            num = board[row][col]
-            if num != 0:
-                if not is_valid(board, row, col, num):
-                    return jsonify({'success': False, 'message': 'invalid'})
-    dl = [1000000]
-    success = solve_sudoku(board, dl)
-    if success:
-        return jsonify({'success': True, 'board': board})
-    else:
-        return jsonify({'success': False, 'message': 'no_solution'})
+    try:
+        data = request.get_json()
+        board = data.get('board')
+        if not board:
+            return jsonify({'success': False, 'message': 'No board provided'})
+
+        # Validate existing numbers first
+        for row in range(9):
+            for col in range(9):
+                num = board[row][col]
+                if num != 0:
+                    if not is_valid(board, row, col, num):
+                        return jsonify({'success': False, 'message': 'invalid'})
+
+        success = solve_sudoku_iterative(board, max_steps=2000000)
+        if success:
+            return jsonify({'success': True, 'board': board})
+        else:
+            return jsonify({'success': False, 'message': 'no_solution'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
