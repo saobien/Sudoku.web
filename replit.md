@@ -1,36 +1,37 @@
-# Sudoku Solver
+# Sudoku
 
-A Python Tkinter desktop GUI application for solving and playing Sudoku puzzles.
+Ứng dụng Sudoku với hai phiên bản: Desktop (Tkinter) và Web (Flask + HTML/CSS/JS).
 
-## Project Overview
+## Tổng quan
 
-This is a feature-rich Sudoku solver with a graphical interface built using Python's Tkinter library. The app supports multiple difficulty levels, note-taking, a timer, and bilingual support (English/Vietnamese).
+Sudoku solver và game đầy đủ tính năng, hỗ trợ tiếng Anh và tiếng Việt.
 
-## Architecture
-
-- **Language**: Python 3.12
-- **UI Framework**: Tkinter (desktop GUI)
-- **Display**: VNC (virtual display for Replit)
-
-## Key Files
-
-- `sudoku_solver_7.py` - Main application file (682 lines) containing:
-  - Sudoku solving algorithm (backtracking with depth limiting)
-  - Tkinter GUI interface
-  - Multiple difficulty levels (Intro, Easy, Medium, Hard, Expert, Final Boss, Universe)
-  - Note-taking mode
-  - Timer functionality
-  - Bilingual support (English/Vietnamese)
-
-## Running the App
-
-The app runs as a VNC desktop application via the "Start application" workflow:
+## Cấu trúc
 
 ```
-python3 sudoku_solver_7.py
+sudoku_solver_7.py     - Desktop app (Tkinter)
+web_app.py             - Web app backend (Flask, port 5000)
+templates/index.html   - Giao diện web
+static/style.css       - Giao diện responsive mobile/web
+static/game.js         - Logic game phía client
 ```
+
+## Tính năng
+
+- **7 cấp độ**: Intro, Easy, Medium, Hard, Expert, Final Boss, Universe
+- **Ghi chú (Note mode)**: Ghi nhiều số vào một ô
+- **Tô màu hợp lệ**: Xanh = đúng, Đỏ = sai
+- **Giải tự động (Solve)**: Backend giải bằng thuật toán backtracking
+- **Đồng hồ đếm giờ**
+- **Hỗ trợ bàn phím** (web) và cảm ứng (mobile)
+- **Hai ngôn ngữ**: Tiếng Anh / Tiếng Việt
+
+## Workflows
+
+- **Start application** — Web app Flask (port 5000, webview) — chạy tự động
+- **Desktop App** — Tkinter VNC app — khởi động thủ công khi cần
 
 ## Dependencies
 
-- `python312Packages.tkinter` (system dependency via Nix)
-- `tk` (system dependency via Nix)
+- `flask` (pip)
+- `python312Packages.tkinter`, `tk` (Nix system — cho desktop app)

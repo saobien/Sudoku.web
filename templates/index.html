@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Sudoku</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header>
+      <div class="header-left">
+        <span id="timer" class="timer">00:00</span>
+      </div>
+      <div class="header-center">
+        <h1 id="app-title">Sudoku</h1>
+      </div>
+      <div class="header-right">
+        <button id="lang-btn" class="lang-btn">VI</button>
+      </div>
+    </header>
+
+    <!-- Level bar -->
+    <div class="level-bar">
+      <button id="level-down" class="level-arrow">&#9664;</button>
+      <span id="level-label" class="level-text">Hard</span>
+      <button id="level-up" class="level-arrow">&#9654;</button>
+    </div>
+
+    <!-- Status -->
+    <div id="status-bar" class="status-bar">Code By: Trần Quốc Minh</div>
+
+    <!-- Board -->
+    <div id="board-wrap">
+      <div id="board"></div>
+    </div>
+
+    <!-- Number pad -->
+    <div id="numpad">
+      <button class="num-btn" data-num="1">1</button>
+      <button class="num-btn" data-num="2">2</button>
+      <button class="num-btn" data-num="3">3</button>
+      <button class="num-btn" data-num="4">4</button>
+      <button class="num-btn" data-num="5">5</button>
+      <button class="num-btn" data-num="6">6</button>
+      <button class="num-btn" data-num="7">7</button>
+      <button class="num-btn" data-num="8">8</button>
+      <button class="num-btn" data-num="9">9</button>
+    </div>
+
+    <!-- Action buttons -->
+    <div id="actions">
+      <button id="btn-solve"  class="action-btn cyan"   data-en="Solve"     data-vi="Giải">Solve</button>
+      <button id="btn-relax"  class="action-btn"        data-en="New Game"  data-vi="Thư giãn">New Game</button>
+      <button id="btn-note"   class="action-btn"        data-en="Note"      data-vi="Ghi chú">Note</button>
+      <button id="btn-reset"  class="action-btn"        data-en="Play Again" data-vi="Chơi Lại">Play Again</button>
+      <button id="btn-del"    class="action-btn"        data-en="Del"       data-vi="Xóa">Del</button>
+      <button id="btn-clear"  class="action-btn"        data-en="Clear All" data-vi="Xóa Hết">Clear All</button>
+    </div>
+  </div>
+
+  <!-- Victory modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-box">
+      <div class="modal-emoji">🎉</div>
+      <div id="modal-msg" class="modal-msg">Victory...!!! 1000 likes....!!!</div>
+      <button id="modal-close" class="modal-close-btn">OK</button>
+    </div>
+  </div>
+
+  <script src="/static/game.js"></script>
+</body>
+</html>

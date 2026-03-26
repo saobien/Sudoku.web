@@ -1,0 +1,290 @@
+/* ==================== Reset & Base ==================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --primary: #0f3460;
+  --accent: #e94560;
+  --cyan: #00b4d8;
+  --orange: #f77f00;
+  --green: #52b788;
+  --yellow: #ffd166;
+  --cell-bg: #1e2a45;
+  --cell-preset: #2a3f65;
+  --cell-border: #2d4170;
+  --block-border: #4a6fa5;
+  --text: #eaf2ff;
+  --text-dim: #8eafd4;
+  --valid: #1e4d2b;
+  --invalid: #5c1b1b;
+  --selected: #1a4a6b;
+  --highlight: #12344d;
+  --note-color: #90caf9;
+  --radius: 10px;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+/* ==================== App Shell ==================== */
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px 16px;
+  gap: 6px;
+}
+
+/* ==================== Header ==================== */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 2px;
+}
+
+.timer {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 1px;
+  font-variant-numeric: tabular-nums;
+  min-width: 52px;
+}
+
+#app-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--cyan), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.lang-btn {
+  background: var(--primary);
+  color: var(--cyan);
+  border: 1.5px solid var(--cyan);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s;
+}
+.lang-btn:active { background: var(--cyan); color: var(--bg); }
+
+/* ==================== Level Bar ==================== */
+.level-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  border: 1px solid var(--primary);
+}
+
+.level-arrow {
+  background: none;
+  border: none;
+  color: var(--cyan);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.level-arrow:active { background: var(--primary); }
+
+.level-text {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 1px;
+  text-align: center;
+  flex: 1;
+}
+
+/* ==================== Status Bar ==================== */
+.status-bar {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  padding: 2px;
+  min-height: 20px;
+  transition: color 0.2s;
+}
+.status-bar.success { color: var(--green); font-weight: 700; }
+.status-bar.error   { color: var(--accent); font-weight: 700; }
+
+/* ==================== Board ==================== */
+#board-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  aspect-ratio: 1/1;
+  width: 100%;
+  max-width: 380px;
+  border: 3px solid var(--block-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--block-border);
+  gap: 1px;
+}
+
+.cell {
+  background: var(--cell-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.1s;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  font-size: clamp(12px, 4vw, 22px);
+  font-weight: 700;
+  color: var(--cyan);
+}
+
+/* Block borders (3x3) */
+.cell[data-col="2"], .cell[data-col="5"] { border-right: 2px solid var(--block-border); }
+.cell[data-row="2"], .cell[data-row="5"] { border-bottom: 2px solid var(--block-border); }
+
+/* States */
+.cell.preset    { background: var(--cell-preset); color: var(--yellow); font-weight: 800; }
+.cell.selected  { background: var(--selected) !important; outline: 2px solid var(--cyan); outline-offset: -2px; z-index: 2; }
+.cell.highlight { background: var(--highlight); }
+.cell.valid     { background: var(--valid); color: var(--green); }
+.cell.invalid   { background: var(--invalid); color: var(--accent); }
+.cell.note-mode { color: var(--note-color); font-size: clamp(7px, 2vw, 12px); font-weight: 400; line-height: 1.2; text-align: center; white-space: pre-wrap; word-break: break-all; }
+
+.cell:active:not(.preset) { background: var(--selected); }
+
+/* ==================== Number Pad ==================== */
+#numpad {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 4px;
+}
+
+.num-btn {
+  background: var(--primary);
+  color: var(--cyan);
+  border: 1.5px solid var(--block-border);
+  border-radius: 8px;
+  padding: 10px 0;
+  font-size: clamp(14px, 4vw, 20px);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.1s, transform 0.1s;
+  touch-action: manipulation;
+}
+.num-btn:active { background: var(--cyan); color: var(--bg); transform: scale(0.94); }
+
+/* ==================== Action Buttons ==================== */
+#actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.action-btn {
+  background: var(--surface);
+  color: var(--text);
+  border: 1.5px solid var(--primary);
+  border-radius: 8px;
+  padding: 10px 4px;
+  font-size: clamp(11px, 3vw, 14px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  touch-action: manipulation;
+  letter-spacing: 0.3px;
+}
+.action-btn:active   { transform: scale(0.95); }
+.action-btn.cyan     { background: var(--cyan); color: var(--bg); border-color: var(--cyan); }
+.action-btn.orange   { background: var(--orange); color: var(--bg); border-color: var(--orange); }
+.action-btn.active   { background: var(--accent); color: #fff; border-color: var(--accent); }
+.action-btn:hover:not(.cyan):not(.orange) { background: var(--primary); }
+
+/* ==================== Modal ==================== */
+.modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+}
+.modal.hidden { display: none; }
+
+.modal-box {
+  background: var(--surface);
+  border: 2px solid var(--cyan);
+  border-radius: 16px;
+  padding: 32px 28px;
+  text-align: center;
+  max-width: 300px;
+  width: 90%;
+  animation: popIn 0.25s ease;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.modal-emoji { font-size: 3rem; margin-bottom: 12px; }
+.modal-msg   { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 20px; line-height: 1.4; }
+
+.modal-close-btn {
+  background: var(--cyan);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 32px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ==================== Loading overlay ==================== */
+#loading {
+  position: fixed; inset: 0;
+  background: rgba(26,26,46,0.85);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--cyan);
+  letter-spacing: 2px;
+}
+#loading.hidden { display: none; }
+
+/* ==================== Responsive tweaks ==================== */
+@media (max-height: 700px) {
+  #app { gap: 4px; padding: 4px 8px 8px; }
+  .action-btn, .num-btn { padding: 8px 0; }
+}
+@media (min-width: 480px) {
+  #board { max-width: 420px; }
+}
