@@ -4,7 +4,7 @@ import sys
 
 sys.setrecursionlimit(50000)
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates', static_folder='static')
 
 # -------------------------------------------------------------------------
 # Sudoku logic
@@ -148,5 +148,3 @@ def solve():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
